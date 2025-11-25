@@ -1,0 +1,62 @@
+# Prediction Pipeline Configuration
+# Run with: python annotation/scripts/predict_pipeline.py --config annotation/config/prediction_config.yaml
+
+# Pipeline configuration - specify which steps to run and in what order
+pipeline:
+  steps: ['sahi_predict', 'fix_coco', 'combine_coco']  # Available: sahi_predict, fix_coco, combine_coco
+
+# SAHI Prediction Configuration
+sahi_predict:
+  # Required parameters
+  data_dir: "/path/to/images"                    # Directory containing images to process
+  output_dir: "/path/to/output"                  # Output directory for annotations
+  model_path: "/path/to/model.pt"                # Path to YOLOv8 model weights
+  
+  # Optional parameters
+  name: "coral_prediction"                       # Experiment name (default: "default")
+  slice_width: 640                               # Width of slices (default: 640)
+  slice_height: 640                              # Height of slices (default: 640)
+  overlap: 0.5                                   # Overlap ratio for slicing (default: 0.5)
+  conf_thresh: 0.4                               # Confidence threshold (default: 0.4)
+  device: "cuda:0"                               # Device to run inference on (default: "cuda:0")
+  verbose: true                                  # Print progress messages (default: true)
+
+# COCO JSON Fixing Configuration
+fix_coco:
+  # Optional parameters
+  input_file: null                               # Input COCO file (if null, uses sahi_predict output)
+  output_file: null                              # Output file path (if null, auto-generated with "_fixed" suffix)
+  verbose: true                                  # Print progress messages (default: true)
+
+# COCO Dataset Combining Configuration
+combine_coco:
+  # Required parameters
+  base_dataset: "/path/to/base_coco.json"        # Path to base COCO JSON file
+  output_path: "/path/to/combined_coco.json"     # Path to output combined COCO JSON file
+  
+  # Optional parameters
+  additional_dataset: null                       # Path to additional COCO file (if null, uses fix_coco or sahi_predict output)
+  verbose: true                                  # Print progress messages (default: true)
+
+# Example configurations for different use cases:
+
+# Use case 1: Only run SAHI prediction
+# pipeline:
+#   steps: ['sahi_predict']
+
+# Use case 2: Run SAHI prediction and fix the output
+# pipeline:
+#   steps: ['sahi_predict', 'fix_coco']
+
+# Use case 3: Only fix an existing COCO file
+# pipeline:
+#   steps: ['fix_coco']
+# fix_coco:
+#   input_file: "/path/to/existing_coco.json"
+
+# Use case 4: Only combine two existing COCO files
+# pipeline:
+#   steps: ['combine_coco']
+# combine_coco:
+#   base_dataset: "/path/to/base.json"
+#   additional_dataset: "/path/to/additional.json"

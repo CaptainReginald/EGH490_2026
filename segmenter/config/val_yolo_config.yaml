@@ -1,0 +1,27 @@
+# Validation configuration for image segmentation
+
+# Project settings
+PROJECT_DIR: "cgras_segmentation/val_2"
+NAME: "full_validation"
+CONF_THRESH: 0.5
+IOU_THRESH: 0.5
+IGNORE_CLASSES: None
+
+# Case 1: Single model validation
+#WEIGHTS: ["cgras_segmentation/train_genera/weights/best.pt"]
+#DATA: ["data/genera/cgras_data.yaml"]
+
+# Case 2: Multiple models validation
+WEIGHTS: [
+    "cgras_segmentation/train_pdae140/weights/best.pt",
+    "cgras_segmentation/train_amil140/weights/best.pt",
+    "cgras_segmentation/train_amag140/weights/best.pt",
+    "cgras_segmentation/train_genera/weights/best.pt"
+]
+
+DATA: [
+    "data/pdae/segmentation_outputs/pdae140_filtered_split_tiled_balanced/cgras_data.yaml",
+    "data/amil/segmentation_outputs/amil140_filtered_split_tiled_balanced/cgras_data.yaml",
+    "data/amag/segmentation_outputs/amag140_filtered_split_tiled_balanced/cgras_data.yaml",
+    "data/genera/cgras_data.yaml",
+]

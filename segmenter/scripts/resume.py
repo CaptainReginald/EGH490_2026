@@ -9,22 +9,22 @@ import torch
 from ultralytics import YOLO
 
 # Path configurations - keep the same as original training
-DATA_PATH = "/mnt/hpccs01/home/gonia/data"
+DATA_PATH = "data/HDG_CCA"
 # DATA_PATH = "/media/java/RRAP03"
 
 # Training parameters - keep the same as original training
 PROJECT = "cgras_segmentation"
-NAME = "train_coral_polyp2" # normally remove the 2
-CLASSES = [0, 1, 2, 3]  # Coral and Polyp
+NAME = "train_genera_CCA_model2" # normally remove the 2
+CLASSES = [0, 1]  # Coral and Polyp
 PRETRAINED = True  # This won't matter when resuming
-EPOCHS = 750  # Total epochs (including previously run ones)
+EPOCHS = 1000  # Total epochs (including previously run ones)
 BATCH_SIZE = 32
 WORKERS = 16
 SAVE_PERIOD = 10
 PATIENCE = 20
 MASK_OVERLAP = False
 
-yaml_data_path = os.path.join(DATA_PATH, "train/cgras_data.yaml")
+yaml_data_path = os.path.join(DATA_PATH, "cgras_data.yaml")
 
 weights_dir = os.path.join(PROJECT, NAME, "weights")
 best_model = os.path.join(weights_dir, "best.pt")

@@ -24,10 +24,10 @@ bounding_boxes = False #if bounding boxes are to be visualised
 batch_height, batch_width = 3000, 3000
 
 # files / data locations
-weights_file_path = "/home/alexanderjones/Alex/hpc-home/data/amil/model_outputs/train_amil130/weights/best.pt"
-save_dir = '/home/alexanderjones/Alex/hpc-home/data/amil/prediction_outputs/amil_test_3'
-img_folder = '/home/alexanderjones/Alex/hpc-home/data/amil/segmentation_outputs/amil_test_3/amil_test_filtered_split_tiled_balanced/train_train_0/images'
-txt_folder = '/home/alexanderjones/Alex/hpc-home/data/amil/segmentation_outputs/amil_test_3/amil_test_filtered_split_tiled_balanced/train_train_0/labels'
+weights_file_path = "cgras_segmentation/cgras_data_2024_AmagCCA_trained_20250924_modelYolo8nseg/weights/cgras_data_2024_AmagCCA_trained_20250924_modelYolo8nseg.pt"
+save_dir = 'data/test/HDG_CCA'
+img_folder = 'data/HDG_CCA/segmentation_outputs/genera_model_CCA_filtered_split_tiled_balanced/test_test_0/images'
+txt_folder = 'data/HDG_CCA/segmentation_outputs/genera_model_CCA_filtered_split_tiled_balanced/test_test_0/labels'
 
 # load model
 def load_model(weights_path):
@@ -123,7 +123,6 @@ def save_image_predictions_mask(results, image, imgname, save_path, conf, class_
     font_size = 1.5#int(round(line_tickness/2))
     font_thickness = 2#3*(abs(line_tickness-font_size))+font_size
     if results and results[0].masks:
-        for j, m in enumerate(results[0].masks):
         for j, m in enumerate(results[0].masks):
             xyn = np.array(m.xyn)
             xyn[0, :, 0] = (xyn[0, :, 0] * width)

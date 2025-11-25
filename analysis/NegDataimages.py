@@ -112,6 +112,7 @@ class ImageProcessor:
                     print(f"Warning: The label file {label_path} is empty.")
         except Exception as e:
             print(f"Error reading {label_path}: {e}")
+
         
         return ground_truth_masks
 
@@ -125,6 +126,7 @@ class DatasetAnalyzer:
     def compare_predictions_with_labels(self, predicted_list, label_list):
         """Compare model predictions with ground truth labels to identify False Positives (FP) and False Negatives (FN)."""
         fp_list, fn_list = [], []
+        total_gt_masks = []
 
         for prediction, label_path in zip(predicted_list, label_list):
             img_name = prediction.img_name
@@ -141,6 +143,7 @@ class DatasetAnalyzer:
                 
             # Load ground truth masks using the new function
             ground_truth_masks = self.img_processor.load_ground_truth_masks(label_path)
+            total_gt_masks.extend(ground_truth_masks)
 
             # When both predicted and ground truth masks are empty, skip the image
             if not predicted_masks and not ground_truth_masks:
@@ -194,6 +197,9 @@ class DatasetAnalyzer:
                 if found_fp:
                     fp_list.append(prediction)
 
+        print(f"Total ground truth masks processed: {len(total_gt_masks)}")
+        import code
+        code.interact(local=dict(globals(), **locals()))  # For debugging purposes
         return fp_list, fn_list
 
 
@@ -233,10 +239,10 @@ class FileManager:
 
 def main():
     # Configuration
-    test_img_folder = '/mnt/hpccs01/home/wardlewo/Data/cgras/cgras_23_n_24_combined/20241219_improved_label_dataset_S+P+NegsReduced+Altered_Labels/test_0/labels/images'
-    test_label_folder = '/mnt/hpccs01/home/wardlewo/Data/cgras/cgras_23_n_24_combined/20241219_improved_label_dataset_S+P+NegsReduced+Altered_Labels/test_0/labels/labels'
-    model_weights = '/home/wardlewo/hpc-home/ultralytics_output/runs/20250326_cgras_segmentation_2022-2023_dataset_alive_dead/20250326_8n_train_multiGpu_B512_best/weights/best.pt'
-    output_base_dir = '/mnt/hpccs01/home/wardlewo/Data/cgras/cgras_23_n_24_combined/test_FN_FP'
+    test_img_folder = '/home/alexanderjones/Alex/hpc-home/data/amag/segmentation_outputs/amag_test_filtered_split_tiled_balanced/train_train_0/images'
+    test_label_folder = '/home/alexanderjones/Alex/hpc-home/data/amag/segmentation_outputs/amag_test_filtered_split_tiled_balanced/train_train_0/labels'
+    model_weights = '/home/alexanderjones/Alex/hpc-home/cgras_segmentation/train_amag140/weights/best.pt'
+    output_base_dir = '/home/alexanderjones/Alex/hpc-home/data/amag/neg_data_images_results'
     percentage = 0.15  # Editable percentage of images to move
     
     print("Starting False Positive and False Negative Analysis")

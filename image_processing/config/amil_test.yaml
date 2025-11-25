@@ -2,8 +2,8 @@
 
 # Project details
 project_name: "amil_test"  # Name of the project
-input_path: "data/amil/cvat_outputs/amil_test/cgras_data.yaml"  # Absolute path to the input data from CVAT
-output_base_path: "data/amil/segmentation_outputs/amil_test_3"  # Base output directory
+input_path: "data/amil/cvat_outputs/amil_early10/amil_early10/data.yaml"  # Absolute path to the input data from CVAT
+output_base_path: "data/amil/segmentation_outputs/conf_mat_seg_1"  # Base output directory
 
 # Pipeline steps to run (in order)
 pipeline:

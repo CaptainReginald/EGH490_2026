@@ -2,6 +2,7 @@ import os
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
+import matplotlib.ticker as tck
 import pandas as pd
 from torchmetrics.classification import ConfusionMatrix
 from datetime import datetime
@@ -20,6 +21,7 @@ class ConfusionMatrixAnalyzer:
         self.background_idx = len(class_names)
         self.detection_type = detection_type  
         self.label_pairs = []
+        self.VALID_ONLY_CLASSES = False  # Flag to control valid classes only
 
     def process_dataset(self, img_list, label_list, min_area=0.001):
         """
@@ -32,6 +34,9 @@ class ConfusionMatrixAnalyzer:
             min_area: Minimum area threshold as fraction of image (default: 0.001 or 0.1%)
         """
         count = 0
+        small_labels = 0
+        debug_info = []
+
         for img_path, label_path in zip(img_list, label_list):
             try:
                 # Get prediction from model
@@ -66,6 +71,7 @@ class ConfusionMatrixAnalyzer:
                                 pred_masks.append(mask_data.flatten())
                             else:
                                 print(f"Skipping small prediction (class {class_label}, area {area:.6f}) in {os.path.basename(img_path)}")
+                                small_labels += 1  # Count how many labels have been skipped due to size
                     else:
                         # Handle case where masks are not available but boxes are
                         for i in range(len(r.boxes)):
@@ -155,7 +161,14 @@ class ConfusionMatrixAnalyzer:
                     
                     print(f"Processed {os.path.basename(img_path)}: {len(true_classes)} ground truths, {len(pred_classes)} predictions")
                     print(f"  Matched: {len(matched_gt)}, Missed: {len(true_classes) - len(matched_gt)}, False positive: {len(pred_classes) - len(matched_pred)}")
-                
+
+                    new_info = {"img_path": os.path.basename(img_path), "ground_truth": len(true_classes), "predictions": len(pred_classes)}
+                    debug_info.append(new_info)
+
+                    #import code
+                    #code.interact(local=dict(globals(),**locals()))
+
+
                 # If neither ground truth nor predictions
                 else:
                     print(f"Processed {os.path.basename(img_path)}: No ground truth, no predictions")
@@ -165,6 +178,19 @@ class ConfusionMatrixAnalyzer:
             except Exception as e:
                 print(f"Error processing {os.path.basename(img_path)}: {e}")
                 self.skipped_images += 1
+        
+
+        print(len(debug_info))
+        total_ground_truth = sum(item["ground_truth"] for item in debug_info)
+        total_predictions = sum(item["predictions"] for item in debug_info)
+
+        print(f"Total ground truth across all images: {total_ground_truth}")
+        print(f"Total predictions across all images: {total_predictions}")
+        
+        import code
+        code.interact(local=dict(globals(),**locals()))
+
+        
         print(f"Count of processed masks: {count}")
         print(f"Dataset processing complete. Processed {self.processed_images} images, skipped {self.skipped_images}")
         print(f"Total labels: {len(self.true_labels)} true, {len(self.pred_labels)} predicted")
@@ -347,10 +373,14 @@ class ConfusionMatrixAnalyzer:
         # Add detailed class distribution analysis
         self._analyze_class_distribution()
         
-        # Get only the classes that actually appear in the data (excluding background)
-        unique_true_classes = set(t for t in self.true_labels if t != self.background_idx)
-        unique_pred_classes = set(p for p in self.pred_labels if p != self.background_idx)
-        active_classes = sorted(list(unique_true_classes | unique_pred_classes))
+        # If only the valid classes are wanted:
+        if self.VALID_ONLY_CLASSES == True:
+            # Get only the classes that actually appear in the data (excluding background)
+            unique_true_classes = set(t for t in self.true_labels if t != self.background_idx)
+            unique_pred_classes = set(p for p in self.pred_labels if p != self.background_idx)
+            active_classes = sorted(list(unique_true_classes | unique_pred_classes))
+        else:
+            active_classes = list(range(len(self.class_names)))  # All classes
         
         # Always include background class for false positives/negatives
         class_indices = active_classes + [self.background_idx]
@@ -481,7 +511,7 @@ class ConfusionMatrixAnalyzer:
             print(row)
         print()
 
-    def plot_confusion_matrix(self, output_dir, normalize="row"):
+    def plot_confusion_matrix(self, output_dir, species_name, dataset_desc, normalize="row"):
         """
         Plot and save confusion matrix using PyTorch.
         """
@@ -501,10 +531,12 @@ class ConfusionMatrixAnalyzer:
                 display_names.append(self.class_names[i])
             else:
                 display_names.append("Background")
-        
+
         # Normalize if requested
         cm_display = cm_tensor
-        title = "Confusion Matrix"
+        title = f"{species_name} Confusion Matrix"
+        subtitle = f'Dataset: {dataset_desc}'
+
         if normalize:
             with torch.no_grad():
                 if normalize == "row" and torch.sum(cm_tensor, dim=1).any():
@@ -513,21 +545,21 @@ class ConfusionMatrixAnalyzer:
                     # Replace zeros with ones to avoid division by zero
                     row_sums[row_sums == 0] = 1
                     cm_display = cm_tensor.float() / row_sums.float()
-                    title = "Row-Normalized Confusion Matrix"
-                    
+                    title = f"Row-Normalized {species_name} Confusion Matrix"
+
                 elif normalize == "column" and torch.sum(cm_tensor, dim=0).any():
                     # Column normalization (normalize by predicted labels)
                     col_sums = torch.sum(cm_tensor, dim=0, keepdim=True)
                     # Replace zeros with ones to avoid division by zero
                     col_sums[col_sums == 0] = 1
                     cm_display = cm_tensor.float() / col_sums.float()
-                    title = "Column-Normalized Confusion Matrix"
+                    title = f"Column-Normalized {species_name} Confusion Matrix"
                     
                 elif normalize == "all" and torch.sum(cm_tensor).item() > 0:
                     # Total normalization (normalize by total count)
                     total = torch.sum(cm_tensor)
                     cm_display = cm_tensor.float() / total.float()
-                    title = "Total-Normalized Confusion Matrix"
+                    title = f"Total-Normalized {species_name} Confusion Matrix"
             
         # Convert to numpy for matplotlib plotting
         cm_np = cm_display.cpu().numpy()
@@ -536,8 +568,8 @@ class ConfusionMatrixAnalyzer:
         n_classes = len(display_names)
         
         # Calculate more compact figure dimensions with better aspect ratio
-        fig_width = max(5, min(n_classes * 1.0, 10))
-        fig_height = max(4, min(n_classes * 0.8, 8))
+        fig_width = max(5, min(n_classes * 0.8, 10))
+        fig_height = max(3, min(n_classes * 0.6, 8))
         
         # Create figure with specified size
         plt.figure(figsize=(fig_width, fig_height))
@@ -550,20 +582,25 @@ class ConfusionMatrixAnalyzer:
         else:
             plt.imshow(cm_np, interpolation='nearest', cmap=cmap, aspect='auto')
             fmt = 'd'
-            
-        plt.title(title, fontsize=14, pad=10)
-        
+
+        plt.suptitle(title, fontsize=12, fontweight='bold', x=0.5, y=0.98)  # Main title - larger, bold
+        plt.title(subtitle, fontsize=8, fontweight='normal', pad=10)
+
+
         # Add smaller colorbar with reduced size to decrease whitespace
         cbar = plt.colorbar(fraction=0.035, pad=0.03)
         cbar.ax.tick_params(labelsize=9)
         
         # Add class ticks with adjusted spacing
         tick_marks = np.arange(len(display_names))
-        fontsize = max(7, min(9, 10 - n_classes // 4))  # Smaller font for more classes
+        fontsize = max(28, min(9, 10 - n_classes // 4))  # Smaller font for more classes
+        ticksize = 9
         
         # Reduce space for tick labels
-        plt.xticks(tick_marks, display_names, rotation=45, ha='right', fontsize=fontsize)
-        plt.yticks(tick_marks, display_names, fontsize=fontsize)
+        #plt.xticks(tick_marks, [])  # Empty labels
+        #plt.yticks(tick_marks, [])  # Empty labels
+        #plt.tick_params(axis='both', which='both', length=0, width=0)
+
         
         # Add text annotations with tighter spacing
         thresh = (cm_np.max() + cm_np.min()) / 2.0
@@ -574,10 +611,38 @@ class ConfusionMatrixAnalyzer:
                         fontsize=fontsize,
                         color="white" if cm_np[i, j] > thresh else "black")
         
+        # Add grid lines between cells
+        ax = plt.gca()
+
+        # Set major ticks at default positions (0, 1, 2, ...) with no visible markers
+        ax.set_xticks(np.arange(len(display_names)), labels=display_names, fontsize=ticksize)
+        ax.set_yticks(np.arange(len(display_names)), labels=display_names, fontsize=ticksize)
+        ax.tick_params(axis='both', which='major', length=0, width=0)  # No visible markers
+
+        # Place minor ticks exactly between major ticks (0.5, 1.5, 2.5, ...)
+        minor_tick_positions = np.arange(len(display_names)) - 0.5
+        ax.xaxis.set_minor_locator(tck.FixedLocator(minor_tick_positions))
+        ax.yaxis.set_minor_locator(tck.FixedLocator(minor_tick_positions))
+        ax.tick_params(axis='both', which='minor', length=0, width=0)  # No visible markers for minor ticks either
+
+        # Grid only on minor ticks (between the cells)
+        ax.grid(which='minor', color='black', linestyle='-', linewidth=2)
+        ax.grid(which='major', visible=False)  # Disable major grid
+
+
+
+        # Add MAIN axis labels further away
+        ax.set_xlabel('Predicted Label', fontsize=12, fontweight='bold', labelpad=10)
+        ax.set_ylabel('True Label', fontsize=12, fontweight='bold', labelpad=10)
+        
+
+
+
+
+
         # Use tighter layout with less padding
         plt.tight_layout(pad=0.5)
-        plt.ylabel('True Label', fontsize=12)
-        plt.xlabel('Predicted Label', fontsize=12)
+    
         
         # Save with normalization type in filename
         norm_str = normalize if normalize else "raw"
@@ -601,7 +666,7 @@ class ConfusionMatrixAnalyzer:
         
         plt.close()  # Close figure to free memory
         return cm_tensor
-        
+     
     def _calculate_metrics(self, class_indices):
         """Calculate precision, recall, and F1 score for all classes using PyTorch metrics."""
         # Initialize metrics dictionary

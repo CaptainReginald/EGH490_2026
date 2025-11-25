@@ -228,17 +228,47 @@ class ImagePatcher:
             class_number = int(parts[0])
             polygon = self.create_polygon_unnormalised(parts, imgw, imgh)
 
-            if len(parts) < 1 or polygon.is_empty:
+            # Check if polygon is empty (or has less than 2 points)
+            if len(parts) < 3 or polygon.is_empty: # < 3 for class + 1 set of (x,y) coordinates
                 if j not in incomplete_lines: 
                     print(f"line {j} is incomplete")
                     incomplete_lines.add(j)
                     import code
                     code.interact(local=dict(globals(), **locals()))    
                 continue
+
+            # Check if coordinates are even (x,y pairs)
+            if (len(parts) - 1) % 2 != 0:  # -1 to exclude class number
+                if j not in incomplete_lines:
+                    print(f"Line {j} has uneven coordinate pairs: {len(parts)-1} coordinates")
+                    incomplete_lines.add(j)
+                continue
+
+            # Check if class number is valid
+            try:
+                class_number = int(parts[0])
+            except ValueError:
+                print(f"Line {j} has invalid class number: {parts[0]}")
+                continue
+
             if self.is_mostly_contained(polygon, x_start, x_end, y_start, y_end, self.TRUNCATE_PERCENT):
                 truncated_polygon = self.truncate_polygon(polygon, x_start, x_end, y_start, y_end)
                 xyn = self.normalise_polygon(truncated_polygon, class_number, x_start, x_end, y_start, y_end, self.TILE_WIDTH, self.TILE_HEIGHT)
-                writeline.append(xyn)
+                
+                # Handle the case where normalise_polygon returns nested lists
+                if isinstance(xyn, list) and len(xyn) > 0:
+                    if isinstance(xyn[0], list):
+                        # Multiple polygons returned, add each one separately
+                        for single_polygon in xyn:
+                            if len(single_polygon) >= 3 and (len(single_polygon) - 1) % 2 == 0:
+                                writeline.append(single_polygon)
+                    else:
+                        # Single polygon, validate coordinate count
+                        if len(xyn) >= 3 and (len(xyn) - 1) % 2 == 0:
+                            writeline.append(xyn)
+                        else:
+                            print(f"Normalized polygon from line {j} has invalid coordinate count: {len(xyn)}")
+                
         return writeline
 
     def calculate_img_section_no(self, img_name):

@@ -1,9 +1,9 @@
 # CGRAS Data Processing Pipeline Configuration
 
 # Project details
-project_name: "amag140"  # Name of the project
-input_path: "data/amag/cvat_outputs/2024_cgras_amag_140"  # Absolute path to the input data from CVAT
-output_base_path: "data/amag/segmentation_outputs"  # Base output directory
+project_name: "genera_model"  # Name of the project
+input_path: "data/genera/cvat_outputs"  # Absolute path to the input data from CVAT
+output_base_path: "data/genera/segmentation_outputs"  # Base output directory
 
 # Pipeline steps to run (in order)
 pipeline:

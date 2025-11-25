@@ -13,7 +13,7 @@ from NegDataimages import Detector, ImageProcessor, DatasetAnalyzer, Prediction
 from conf_matrix_script.confusion_matrix_analyzer import ConfusionMatrixAnalyzer
 from conf_matrix_script.config_utils import load_config, get_default_config_path
 
-CONFIG = "confusion_matrix_config.yaml"
+CONFIG = "/home/alexanderjones/Alex/hpc-home/repos/cgras_coral_detection/analysis/configs/confusion_matrix_config.yaml"
 default_config = get_default_config_path(CONFIG)
 
 def main():
@@ -48,6 +48,8 @@ def main():
     min_area = config['parameters']['min_area']
     plot_normalized = config['visualization']['plot_normalized']
     plot_raw = config['visualization']['plot_raw']
+    species_name = config['details']['species_name']
+    dataset_desc = config['details']['dataset_desc']
     
     # Get classes and class colors from config instead of Utils
     classes = config.get('classes', ["alive_coral", "dead_coral"])
@@ -95,13 +97,15 @@ def main():
     
     # Process dataset and collect labels
     cm_analyzer.process_dataset(img_list, label_list, min_area)
+    import code
+    code.interact(local=dict(globals(),**locals()))
     
     # Create and plot confusion matrix
     if plot_normalized:
-        cm_analyzer.plot_confusion_matrix(output_dir, normalize="row")
+        cm_analyzer.plot_confusion_matrix(output_dir, species_name, dataset_desc, normalize="row")
     
     if plot_raw:
-        cm_analyzer.plot_confusion_matrix(output_dir, normalize=None)
+        cm_analyzer.plot_confusion_matrix(output_dir, species_name, dataset_desc, normalize=None)
 
     print(f"Results saved to {output_dir}")
 

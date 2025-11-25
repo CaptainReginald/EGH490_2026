@@ -3,10 +3,17 @@
 **Coral Growout Robotic Assessment System (CGRAS) Settler Counter**  
 This repository contains code to count coral settlers in settlement tanks using object detection and/or image segmentation (TBD).
 
-Last updated: Jan 2024
+Last updated: Aug 2025
 ---
 
 ## Code Layout
+
+### Analysis
+- **`Conf_matrix`**: Use a YOLO model to predict on a given dataset and save a confusion matrix of performance metrics.
+- **`NegDataimages.py`**: Define classes used in `Conf_matrix.py` and conduct FP/FN Analysis
+- **`config_matrix_analyzer.py`**: Compare predicted labels with ground truth labels to determine performance metrics.
+- **`view_predictions.py`**: Visualises prediction results using a trained YOLO model.
+---
 
 ### Annotation
 - **`CVAT_class_constructor.json`**: Defines CVAT classes and colors for CGRAS.  
@@ -20,13 +27,46 @@ Last updated: Jan 2024
 - **`Utils.py`**: Contains class definitions and utility functions for other scripts.  
 - **`view_predictions.py`**: Visualizes prediction results using a trained YOLOv8 weights file.
 
+- **`predict_pipeline.py`**: Runs full prediction pipeline using instructions from a config file.
+- **`config_temp.yaml`**: Lays out required parameters to run prediction process, including different use cases.
+- **`combine_coco_edits`**: Combines two COCO datasets, replacing outdated labels with updated labels from the secondary dataset.
+- **`sahi_predict_edits`**: Runs a trained YOLOv8 segment model on unlabeled images, saving result in CVAT annotation format.
+- **`fix_coco_json_edits`**: Fixes COCO JSON files by removing invalid annotations.
+
 ---
 
-### Classifier
+### Archive
 - **`relabel_seg_to_single_class.py`**: Converts YOLO segmentation labels with multiple classes into a single class.  
 - **`segTOclassifier.py`**: Processes YOLO segmentation data to generate cropped images for specific class instances.
 
 ---
+
+### Docs
+- **`cvat_notes.md`**: Instructions regarding how to locally host CVAT
+- **`HPC_Notes.md`**: Instructions regarding the use of the HPC
+- **`Human_in_the_loop.md`**: Instructions regarding the labelling and training processes
+- **`image_processing.md`**: Instructions regarding the process of image splitting to prepare for training
+
+---
+
+### Experiments
+
+
+---
+
+### General Scripts
+
+
+---
+
+### HPC
+- **`hpc_submit_gpu.bash`**: Request GPU resources on the Aqua HPC
+- **`hpc_submit_cpu.bash`**: Request CPU resources on the Aqua HPC
+- **`image_split_hpc.bash`**: Request resources and run the image splitting pipeline on the Aqua HPC
+- **`train_hpc.bash`**: Request resources and run the training pipeline on the Aqua HPC
+
+---
+
 
 ### Image Processing
 Functions and scripts for processing images:  
@@ -34,11 +74,24 @@ Functions and scripts for processing images:
 - **`splitfiles.py`**: Splits a dataset into training, testing, and validation sets.  
 - **`tiling_images.py`**: Tiles large images into smaller ones with annotations for YOLO model training.  
 
+- **`image_processing.py`**: Splits CVAT export images into 640x640px patches.
+- **`select_images.py`**: Selects desired images from datasetand copies to a separate location.
+- **`folder_structurer.py`**: Defines a class to validate, convert, and visual CVAT exports for YOLO training.
+- **`filterer.py`**: Defines a class to analyse and filter YOLO training data based on label characteristics.
+- **`data_splitter.py`**: Defines a class to split YOLO datasets into train, validation, and test sets.
+- **`image_patcher.py`**: Defines a class to split images into square 640px patches, transferring labels to new related txt files.
+
 #### ROI and ImageJ Tools
 - **`convert_tif2jpg.py`**: Converts TIFF files to JPG format.  
 - **`pde_to_cvat.py`**: Converts ROI PDE data to CVAT format.  
 - **`ROI_2_CSV.py`**: Converts ROI PDE data to CSV format.  
 - **`run_ROI_2_CSV.py`**: Bash script for batch processing ROI to CSV conversion.
+
+---
+
+### Repo Info
+- **`environment.yml`**: Lists all packages required by the CGRAS_CORAL_DETECTION repo.
+- **`make_cgras_venv.sh`**: Creates the cgras environment using packages listed in `environment.yml`.
 
 ---
 
@@ -58,6 +111,10 @@ Scripts for training and predicting coral settlers using a YOLO model:
 - **`predict_segmenter.py`**: Code for predicting corals in images.  
 - **`train_segmenter.py`**: Script to train a YOLO model on a dataset.  
 - **`val_segmenter.py`**: Evaluates test data to measure model performance.
+
+- **`train.py`**: Script to train a YOLO model on a dataset.
+- **`val.py`**: Compares model predictions with ground truth labels.
+- **`val_yolo`**: Determine performance metrics for a YOLO model validated on a dataset.
 
 ---
 

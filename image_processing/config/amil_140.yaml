@@ -1,9 +1,9 @@
 # CGRAS Data Processing Pipeline Configuration
 
 # Project details
-project_name: "Amil140"  # Name of the project
+project_name: "amil140"  # Name of the project
 input_path: "data/amil/cvat_outputs/amil140"  # Absolute path to the input data from CVAT
-output_base_path: "data/amil/segmentation_outputs/amil140"  # Base output directory
+output_base_path: "data/amil/segmentation_outputs"  # Base output directory
 
 # Pipeline steps to run (in order)
 pipeline:

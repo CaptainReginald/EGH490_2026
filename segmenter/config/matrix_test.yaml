@@ -2,9 +2,9 @@
 
 # Project settings
 project: "cgras_segmentation"
-name: "train_amil140_cont"
-model_path: "cgras_segmentation/train_amil1403/weights/best.pt"
-yaml_path: "data/amil/segmentation_outputs/amil140_filtered_split_tiled_balanced/cgras_data.yaml"
+name: "conf_mat_test_1"
+model_path: "/home/alexanderjones/Alex/hpc-home/yolov8n-seg.pt"
+yaml_path: "/home/alexanderjones/Alex/hpc-home/data/pdae/segmentation_outputs/pdae_early10_filtered_split_tiled_balanced/cgras_data.yaml"
 
 # Training parameters
 classes: [0, 1]  # Coral and Polyp
