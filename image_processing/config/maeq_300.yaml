@@ -1,0 +1,25 @@
+# CGRAS Data Processing Pipeline Configuration
+
+# Project details
+project_name: "cslics_2024_amag_oct_da42_subfolder_1_4"  # Name of the project
+input_path: "Data/cslics/2024_spawn_tanks_data/amag/cvat_export"  # Absolute path to the input data from CVAT
+output_base_path: "Data/cslics/2024_spawn_tanks_data/amag/"  # Base output directory
+
+# Pipeline steps to run (in order)
+pipeline:
+  - folder_structure
+  - split
+
+# Step-specific configurations
+folder_structure:
+  enabled: true  # Set to false to skip this step
+
+
+split:
+  enabled: true
+  split_field: null  # Field to split by (e.g., tile, week). Null (None) for split randomly based on the ratio
+  train_ratio: 0.7
+  val_ratio: 0.15
+  test_ratio: 0.15
+  stratify_by: null  # Field to stratify by (null for no stratification)
+  random_seed: 42

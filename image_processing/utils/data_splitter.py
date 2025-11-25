@@ -202,6 +202,25 @@ class DatasetSplitter:
                     'original_dataset': self._get_dataset_name(img_path)
                 })
             else:
+                # Handle files that don't match either pattern
+                # Create a generic entry for these files
+                label_path = self._find_label_path(img_path)
+                has_label = label_path.exists()
+                
+                file_info.append({
+                    'filename': filename,
+                    'species': 'unknown',
+                    'room': 'unknown',
+                    'date': 'unknown',
+                    'week': 1,
+                    'tile': 1,
+                    'index': len(file_info) + 1,
+                    'extension': img_path.suffix[1:],
+                    'image_path': img_path,
+                    'label_path': label_path if has_label else None,
+                    'has_label': has_label,
+                    'original_dataset': self._get_dataset_name(img_path)
+                })
                 malformed_files.append(filename)
         
         if malformed_files:
