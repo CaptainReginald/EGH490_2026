@@ -95,8 +95,8 @@ def unzip_file(zip_path, extract_to, max_workers=None):
     print(f"Average files per second: {total_extracted/total_time:.2f}")
 
 if __name__ == "__main__":
-    zip_path = 'Data/cslics/2024_spawn_tanks_data/100000000846a7ff.zip'  # Replace with your .zip file path
-    extract_to = 'Data/cslics/2024_spawn_tanks_data/'  # Replace with your extraction directory path
+    zip_path = 'Data/cslics/cslics_202.zip'  # Replace with your .zip file path
+    extract_to = 'Data/cslics/2023_2024_combined_dataset/'  # Replace with your extraction directory path
     
     # For HPC, you can specify max_workers based on your system
     # e.g., unzip_file(zip_path, extract_to, max_workers=16)

@@ -9,7 +9,6 @@
     cd $PBS_O_WORKDIR
     
     source mambaforge/bin/activate cgras
-    # conda activate /home/tsaid/miniforge3/envs/cslics
     # conda activate cslics
 
     python3 Corals/cgras_settler_counter/hpc/unzip.py
