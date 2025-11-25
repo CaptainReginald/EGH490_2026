@@ -2,8 +2,8 @@
 
 # Project details
 project_name: "amag130"  # Name of the project
-input_path: "Data/cgras/amag/exported_from_cvat"  # Absolute path to the input data from CVAT
-output_base_path: "Data/cgras/amag"  # Base output directory
+input_path: "data/amag/cvat_outputs/amag130/amag130"  # Absolute path to the input data from CVAT
+output_base_path: "data/amag/segmentation_outputs"  # Base output directory
 
 # Pipeline steps to run (in order)
 pipeline:
