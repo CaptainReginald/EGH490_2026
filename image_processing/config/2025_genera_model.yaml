@@ -3,7 +3,7 @@
 # Project details
 project_name: "2025_genera_model"  # Name of the project
 input_path: "Data/2025_cgras/2025_genera_model/cvat_exports"  # Absolute path to the input data from CVAT
-output_base_path: "data/cgras/segmentation_outputs/2025_genera_model"  # Base output directory
+output_base_path: "Data/2025_cgras/segmentation_outputs/2025_genera_model"  # Base output directory
 
 # Pipeline steps to run (in order)
 pipeline:
