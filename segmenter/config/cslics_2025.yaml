@@ -2,10 +2,10 @@
 
 # Project settings
 project: "cslics_detection"
-name: "cslics_2025_combined_20251113"
+name: "20260317_cslics_subsurface_combined_640p_yolov8n_no_augments"
 model_path: "yolov8n.pt"
 yaml_path: "Data/cslics/2023_2024_combined_dataset/cslics_2023_2024_subsurface_M12.yaml"
-
+task: "detect"
 # Training parameters
 classes: [0]  # Coral: Alive and Dead
 pretrained: true

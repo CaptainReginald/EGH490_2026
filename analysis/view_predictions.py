@@ -24,10 +24,10 @@ bounding_boxes = False #if bounding boxes are to be visualised
 batch_height, batch_width = 3000, 3000
 
 # files / data locations
-weights_file_path = "cgras_segmentation/cgras_data_2024_AmagCCA_trained_20250924_modelYolo8nseg/weights/cgras_data_2024_AmagCCA_trained_20250924_modelYolo8nseg.pt"
-save_dir = 'data/test/HDG_CCA'
-img_folder = 'data/HDG_CCA/segmentation_outputs/genera_model_CCA_filtered_split_tiled_balanced/test_test_0/images'
-txt_folder = 'data/HDG_CCA/segmentation_outputs/genera_model_CCA_filtered_split_tiled_balanced/test_test_0/labels'
+weights_file_path = '/home/java/hpc-home/cgras_segmentation/2025_genera_model14/weights/best.pt' 
+save_dir = 'Data/test/2025_genera_model_predictions_640p'
+img_folder = '/home/java/hpc-home/Data/2025_cgras/segmentation_outputs/2024_genera_model_filtered_split_tiled_balanced/2025_genera_model_filtered_split_tiled_balanced/test_0/images'
+txt_folder = '/home/java/hpc-home/Data/2025_cgras/segmentation_outputs/2024_genera_model_filtered_split_tiled_balanced/2025_genera_model_filtered_split_tiled_balanced/test_0/labels'
 
 # load model
 def load_model(weights_path):

@@ -3,9 +3,9 @@
 # Project settings
 project: "cgras_segmentation"
 name: "2025_genera_model"
-model_path: "cgras_segmentation/2025_genera_model5/weights/best.pt"
-yaml_path:  "Data/2025_cgras/segmentation_outputs/2025_genera_model/2025_genera_model_filtered_split_tiled_balanced/cgras_data.yaml"
-
+model_path: "cgras_segmentation/2025_genera_model14/weights/best.pt"
+yaml_path: "Data/2025_cgras/segmentation_outputs/2024_genera_model_filtered_split_tiled_balanced/cgras_data.yaml"
+task: "segment"  
 # Training parameters
 classes: [0, 1]  # Coral and Polyp
 pretrained: true

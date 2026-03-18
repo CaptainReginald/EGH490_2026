@@ -1,103 +1,96 @@
-import zipfile
+import tarfile
 import os
+import sys
 import time
-from multiprocessing import Pool, Manager, cpu_count
-import math
+import subprocess
+from pathlib import Path
 
-def extract_file_chunk(args):
-    """Extract a chunk of files from the zip archive in a single process"""
-    zip_path, file_chunk, extract_to, progress_dict, process_id = args
-    
-    extracted_count = 0
-    try:
-        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-            for file_name in file_chunk:
-                try:
-                    zip_ref.extract(file_name, extract_to)
-                    extracted_count += 1
-                    
-                    # Update progress every 50 files per process
-                    if extracted_count % 50 == 0:
-                        progress_dict[process_id] = extracted_count
-                        
-                except Exception as e:
-                    print(f"Error extracting {file_name}: {e}")
-                    
-        # Final update
-        progress_dict[process_id] = extracted_count
-        return extracted_count
-        
-    except Exception as e:
-        print(f"Process {process_id} error: {e}")
-        return extracted_count
-
-def unzip_file(zip_path, extract_to, max_workers=None):
+def extract_tar_system(tar_path, extract_to):
+    """Fast extraction using system tar command (much faster than Python)"""
     if not os.path.exists(extract_to):
         os.makedirs(extract_to)
     
-    # Determine optimal number of workers for HPC
-    if max_workers is None:
-        max_workers = cpu_count() 
-    
-    print(f"Using {max_workers} processes for extraction...")
-    
-    # Get file list
-    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-        file_list = zip_ref.namelist()
-        total_files = len(file_list)
-    
-    print(f"Starting extraction of {total_files} files...")
-    
-    # Split files into chunks for each process
-    chunk_size = math.ceil(total_files / max_workers)
-    file_chunks = [file_list[i:i + chunk_size] for i in range(0, total_files, chunk_size)]
-    
-    # Create shared progress tracking
-    manager = Manager()
-    progress_dict = manager.dict()
-    
-    # Prepare arguments for each process
-    process_args = []
-    for i, chunk in enumerate(file_chunks):
-        if chunk:  # Only add non-empty chunks
-            progress_dict[i] = 0
-            process_args.append((zip_path, chunk, extract_to, progress_dict, i))
+    print(f"Extracting {tar_path} using system tar command...")
+    print(f"Target directory: {extract_to}")
     
     start_time = time.time()
     
-    # Start multiprocessing
-    with Pool(processes=len(process_args)) as pool:
-        # Start async processes
-        results = pool.map_async(extract_file_chunk, process_args)
+    try:
+        # Use system tar with progress monitoring via pv if available
+        # -x: extract, -f: file, -v: verbose, -C: change to directory
+        result = subprocess.run(
+            ['tar', '-xf', tar_path, '-C', extract_to, '--verbose'],
+            capture_output=False,
+            text=True,
+            check=True
+        )
         
-        # Monitor progress
-        while not results.ready():
-            time.sleep(2)  # Check every 2 seconds
-            total_completed = sum(progress_dict.values())
+        total_time = time.time() - start_time
+        print(f"\nExtraction complete!")
+        print(f"Total extraction time: {total_time:.2f} seconds")
+        
+    except subprocess.CalledProcessError as e:
+        print(f"Error during extraction: {e}")
+        raise
+    except FileNotFoundError:
+        print("System 'tar' command not found. Falling back to Python extraction...")
+        return extract_tar_python(tar_path, extract_to)
+
+def extract_tar_python(tar_path, extract_to):
+    """Optimized Python-based extraction with progress reporting"""
+    if not os.path.exists(extract_to):
+        os.makedirs(extract_to)
+    
+    print(f"Opening tar archive: {tar_path}")
+    
+    start_time = time.time()
+    
+    try:
+        with tarfile.open(tar_path, 'r', bufsize=1024*1024) as tar_ref:
+            # Get list of members
+            members = tar_ref.getmembers()
+            total_files = len(members)
             
-            if total_completed > 0:
-                elapsed_time = time.time() - start_time
-                estimated_total_time = (elapsed_time / total_completed) * total_files
-                remaining_time = estimated_total_time - elapsed_time
-                
-                print(f"Extracted {total_completed}/{total_files} files. "
-                      f"Estimated time remaining: {remaining_time:.2f} seconds")
-        
-        # Get final results
-        extraction_counts = results.get()
+            print(f"Starting extraction of {total_files} files/directories...")
+            
+            extracted_count = 0
+            
+            # Extract all at once (faster than one by one)
+            tar_ref.extractall(path=extract_to, members=members)
+            extracted_count = total_files
+            
+            total_time = time.time() - start_time
+            
+            print(f"Extracted {tar_path} to {extract_to}")
+            print(f"Total extraction time: {total_time:.2f} seconds")
+            print(f"Total items extracted: {extracted_count}/{total_files}")
+            if total_time > 0:
+                print(f"Average items per second: {extracted_count/total_time:.2f}")
+            
+    except Exception as e:
+        print(f"Error opening tar file: {e}")
+        raise
+
+def extract_tar(tar_path, extract_to, use_system=True):
+    """
+    Extract tar archive with automatic method selection
     
-    total_time = time.time() - start_time
-    total_extracted = sum(extraction_counts)
-    
-    print(f"Unzipped {zip_path} to {extract_to}")
-    print(f"Total extraction time: {total_time:.2f} seconds")
-    print(f"Total files extracted: {total_extracted}/{total_files}")
-    print(f"Average files per second: {total_extracted/total_time:.2f}")
+    Args:
+        tar_path: Path to the tar file
+        extract_to: Directory to extract to
+        use_system: If True (default), use system tar command for speed
+    """
+    if use_system:
+        return extract_tar_system(tar_path, extract_to)
+    else:
+        return extract_tar_python(tar_path, extract_to)
 
 if __name__ == "__main__":
-    zip_path = 'Data/cslics/cslics_202.zip'  # Replace with your .zip file path
-    extract_to = 'Data/cslics/2023_2024_combined_dataset/'  # Replace with your extraction directory path
+    tar_path = 'Data/cslics/2025_nov_spawn/1422724372929.tar'  # Replace with your .tar file path
+    extract_to = 'Data/cslics/2025_nov_spawn'  # Replace with your extraction directory path
     
-    # For HPC, you can specify max_workers based on your system
-    # e.g., unzip_file(zip_path, extract_to, max_workers=16)
-    unzip_file(zip_path, extract_to)
+    # Use system tar command for maximum speed (recommended)
+    extract_tar(tar_path, extract_to, use_system=True)
+    
+    # Or use Python extraction (slower but more portable):
+    # extract_tar(tar_path, extract_to, use_system=False)

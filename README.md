@@ -1,10 +1,63 @@
 # CGRAS Settler Counter
 
 **Coral Growout Robotic Assessment System (CGRAS) Settler Counter**  
-This repository contains code to count coral settlers in settlement tanks using object detection and/or image segmentation (TBD).
+This repository contains code to count coral settlers on settlement tiles using semantic segmentation image.
 
 Last updated: Aug 2025
 ---
+## Getting started with the machine learning pipeline 
+This section is to serve as a quick start for getting familiar and utilising the core processes of the repo as per the image below:
+
+<img src="docs/CGRAS-Coral_detection_model_development.jpg" alt="Coral_detection_model_development" width="50%" height="auto">
+
+### The first script within the creation process is the [image processing pipeline](image_processing/scripts/image_processing.py).
+- This script takes full sub images then processes the images into 640x640 "patches" that then can be used by the model.
+- The input of these script is a config file specifying i/o directories as well as controlling how the operations are applied, [you can see examples here.](image_processing/config)
+  
+Example usage
+```bash
+python image_processing/scripts/image_processing.py --config image_processing/config/2025_genera_model.yaml 
+```
+
+This script then outputs a folder with a similar file directory:
+```
+Project_name
+├── cgras_data.yaml
+├── test_0
+│   ├── images
+│   └── labels
+├── train_0
+│   ├── images
+│   └── labels
+└── valid_0
+    ├── images
+    └── labels
+```
+The next step is then to train the model itself
+
+The project utilises ultralytics libary to compile and load the model, [the full documentation can be found here.](https://docs.ultralytics.com/modes/train/#train-settings) 
+
+Similarly, [the training script](segmenter/scripts/train.py) also utilises a config script which modifies the [ultralytics training settings](https://docs.ultralytics.com/usage/cfg/#train-settings) as well as specifing the path to cgras_data.yaml. 
+
+Depending on hardware, batchsize and many other factors, training time can signifacntly vary, current model training times are ~19 hours, 76 epoches. 
+
+Example usage
+```bash
+python segmentation/scripts/train.py --config segmentation/config/2025_genera_model.yaml 
+```
+Evaluating
+
+For assessing model performance there are a few scripts useful scripts:
+Quantative 
+- [Loss curve](segmenter/scripts/generateLossCurve_seg.py) 
+- [Confusion Matrix](analysis/Conf_matrix.py)
+- [val_yolo.py](segmenter/scripts/val_yolo.py)
+Qualatative 
+- [view_predictions.py](analysis/view_predictions.py): Visulising labels and model predictions overlaped.
+- [test_image.py](segmenter/scripts/test_image.py): Visualising labels and predictions side by side.  
+
+Building semi-supervised labels 
+prediction pipeline 
 
 ## Code Layout
 

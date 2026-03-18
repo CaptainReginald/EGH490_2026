@@ -41,7 +41,7 @@ def train_model(config):
     # Train the model
     model.train(
         data=config['yaml_path'],
-        task="segment",
+        task=config['task'],
         device=config['device'],
         epochs=config['epochs'],
         batch=config['batch_size'],
@@ -57,7 +57,7 @@ def train_model(config):
         imgsz=config['image_size'],
         scale=config['scale'],
         flipud=config['flipud'],
-        fliplr=config['fliplr']
+        fliplr=config['fliplr'],
     )
     
     print("\nTraining complete!")
